@@ -87,6 +87,53 @@ class TaskControllerTest {
     }
 
     @Test
+    void shouldReturn400WhenCreatingTaskWithTooLongTitle() throws Exception {
+        TaskRequest request = new TaskRequest();
+        request.setTitle("a".repeat(256));
+        request.setStatus(TaskStatus.OPEN);
+        request.setPriority(TaskPriority.MEDIUM);
+
+        mockMvc.perform(post("/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenCreatingTaskWithTooLongDescription() throws Exception {
+        TaskRequest request = new TaskRequest();
+        request.setTitle("Valid title");
+        request.setDescription("a".repeat(256));
+        request.setStatus(TaskStatus.OPEN);
+        request.setPriority(TaskPriority.MEDIUM);
+
+        mockMvc.perform(post("/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenCreatingTaskWithInvalidEnumValue() throws Exception {
+        String malformedJson = """
+                {"title":"Valid title","status":"NOT_A_STATUS","priority":"MEDIUM"}
+                """;
+
+        mockMvc.perform(post("/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(malformedJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenCreatingTaskWithMalformedJson() throws Exception {
+        mockMvc.perform(post("/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{not valid json"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void shouldReturn200WhenTaskExists() throws Exception {
         UUID id = UUID.randomUUID();
         given(taskService.findById(id)).willReturn(sampleResponse(id));

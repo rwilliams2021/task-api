@@ -34,10 +34,11 @@ public class Task {
     private UUID id;
 
     @NotNull
-    @Size(min = 3)
+    @Size(min = 3, max = 255)
     @Column(nullable = false)
     private String title;
 
+    @Size(max = 255)
     private String description;
 
     @NotNull

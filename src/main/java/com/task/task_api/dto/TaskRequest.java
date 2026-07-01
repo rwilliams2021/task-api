@@ -15,9 +15,10 @@ import lombok.Setter;
 public class TaskRequest {
 
     @NotBlank
-    @Size(min = 3, message = "title must be at least 3 characters long")
+    @Size(min = 3, max = 255, message = "title must be between 3 and 255 characters long")
     private String title;
 
+    @Size(max = 255, message = "description must be at most 255 characters long")
     private String description;
 
     @NotNull
