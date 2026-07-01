@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: task_api
+      POSTGRES_USER: task_api
+      POSTGRES_PASSWORD: task_api
+    ports:
+      - "5432:5432"
+    volumes:
+      - task_api_pgdata:/var/lib/postgresql/data
+
+volumes:
+  task_api_pgdata:
