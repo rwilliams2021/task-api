@@ -115,6 +115,35 @@ class TaskControllerTest {
     }
 
     @Test
+    void shouldPassPriorityFilterThroughToService() throws Exception {
+        given(taskService.findAll(eq(null), eq(TaskPriority.HIGH))).willReturn(List.of(sampleResponse(UUID.randomUUID())));
+
+        mockMvc.perform(get("/tasks").param("priority", "HIGH"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void shouldPassCombinedFiltersThroughToService() throws Exception {
+        given(taskService.findAll(eq(TaskStatus.OPEN), eq(TaskPriority.HIGH)))
+                .willReturn(List.of(sampleResponse(UUID.randomUUID())));
+
+        mockMvc.perform(get("/tasks").param("status", "OPEN").param("priority", "HIGH"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void shouldReturnAllTasksWhenNoFiltersGiven() throws Exception {
+        given(taskService.findAll(eq(null), eq(null)))
+                .willReturn(List.of(sampleResponse(UUID.randomUUID()), sampleResponse(UUID.randomUUID())));
+
+        mockMvc.perform(get("/tasks"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
     void shouldReturn204WhenDeletingExistingTask() throws Exception {
         UUID id = UUID.randomUUID();
 
@@ -145,6 +174,22 @@ class TaskControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldReturn404WhenUpdatingMissingTask() throws Exception {
+        UUID id = UUID.randomUUID();
+        TaskRequest request = new TaskRequest();
+        request.setTitle("Updated title");
+        request.setStatus(TaskStatus.DONE);
+        request.setPriority(TaskPriority.LOW);
+
+        given(taskService.update(eq(id), any(TaskRequest.class))).willThrow(new TaskNotFoundException(id));
+
+        mockMvc.perform(put("/tasks/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound());
     }
 
     private TaskResponse sampleResponse(UUID id) {
