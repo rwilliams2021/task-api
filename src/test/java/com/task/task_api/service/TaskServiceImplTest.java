@@ -91,6 +91,16 @@ class TaskServiceImplTest {
         verify(taskRepository, times(0)).deleteById(id);
     }
 
+    @Test
+    void shouldDeleteWhenTaskExists() {
+        UUID id = UUID.randomUUID();
+        when(taskRepository.existsById(id)).thenReturn(true);
+
+        taskService.delete(id);
+
+        verify(taskRepository).deleteById(id);
+    }
+
     private Task sampleTask() {
         return Task.builder()
                 .id(UUID.randomUUID())

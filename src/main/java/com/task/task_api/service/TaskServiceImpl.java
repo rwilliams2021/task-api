@@ -65,7 +65,7 @@ public class TaskServiceImpl implements TaskService {
         task.setDescription(request.getDescription());
         task.setStatus(request.getStatus());
         task.setPriority(request.getPriority());
-        return TaskResponse.from(taskRepository.save(task));
+        return TaskResponse.from(taskRepository.saveAndFlush(task));
     }
 
     @Override
