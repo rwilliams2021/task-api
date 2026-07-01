@@ -9,8 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.task.task_api.dto.TaskRequest;
 import com.task.task_api.dto.TaskResponse;
 import com.task.task_api.entity.Task;
-import com.task.task_api.entity.TaskPriority;
 import com.task.task_api.entity.TaskStatus;
+import com.task.task_api.entity.TaskPriority;
 import com.task.task_api.exception.TaskNotFoundException;
 import com.task.task_api.repository.TaskRepository;
 
@@ -25,7 +25,17 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public List<TaskResponse> findAll(TaskStatus status, TaskPriority priority) {
-        return taskRepository.findByFilters(status, priority).stream()
+        List<Task> tasks;
+        if (status != null && priority != null) {
+            tasks = taskRepository.findByStatusAndPriority(status, priority);
+        } else if (status != null) {
+            tasks = taskRepository.findByStatus(status);
+        } else if (priority != null) {
+            tasks = taskRepository.findByPriority(priority);
+        } else {
+            tasks = taskRepository.findAll();
+        }
+        return tasks.stream()
                 .map(TaskResponse::from)
                 .toList();
     }
@@ -41,8 +51,8 @@ public class TaskServiceImpl implements TaskService {
         Task task = Task.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
-                .status(request.getStatus() != null ? request.getStatus() : TaskStatus.OPEN)
-                .priority(request.getPriority() != null ? request.getPriority() : TaskPriority.MEDIUM)
+                .status(request.getStatus())
+                .priority(request.getPriority())
                 .build();
         return TaskResponse.from(taskRepository.save(task));
     }
@@ -53,8 +63,8 @@ public class TaskServiceImpl implements TaskService {
         Task task = getTaskOrThrow(id);
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
-        task.setStatus(request.getStatus() != null ? request.getStatus() : task.getStatus());
-        task.setPriority(request.getPriority() != null ? request.getPriority() : task.getPriority());
+        task.setStatus(request.getStatus());
+        task.setPriority(request.getPriority());
         return TaskResponse.from(taskRepository.save(task));
     }
 

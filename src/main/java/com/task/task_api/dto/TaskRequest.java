@@ -4,6 +4,7 @@ import com.task.task_api.entity.TaskPriority;
 import com.task.task_api.entity.TaskStatus;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import lombok.Getter;
@@ -19,7 +20,9 @@ public class TaskRequest {
 
     private String description;
 
+    @NotNull
     private TaskStatus status;
 
+    @NotNull
     private TaskPriority priority;
 }
